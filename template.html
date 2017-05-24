@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="">
+  <meta name="author" content="">
+  <title>Amazon Pay x AWS Summit</title>
+  <link rel="stylesheet" type="text/css" href="css/bootstrap.min.css">
+  <link rel="stylesheet" type="text/css" href="css/bootstrap-theme.min.css">
+
+  <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+  <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+  <!--[if lt IE 9]>
+  <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+  <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+  <![endif]-->
+
+</head>
+<body>
+
+<!-- Page Content -->
+<div class="container">
+
+  <div class="row">
+    <div class="col-lg-12 text-center">
+      <h1>AWS Summit 2017 x Amazon Pay</h1>
+      <h4 id="oroID"></h4>
+      <div class="row" style="margin-bottom: 10px;">
+        <div class="col-xs-12" style="padding-top: 10px;">
+          <h4>Amazon Pay Button</h4>
+          <div style="margin: auto">
+            <div id="buttonWidgets"></div>
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-xs-6" style="height: 350px;background-color: #66afe9">
+          <h4>Address Book Widgets</h4>
+          <div id="addressWidgets" style="height: 250px;"></div>
+        </div>
+        <div class="col-xs-6" style="height: 350px;background-color: #2aabd2">
+          <h4>Wallet Widgets</h4>
+          <div id="walletWidgets" style="height: 250px;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- /.row -->
+
+</div>
+<!-- /.container -->
+
+
+<script type="text/javascript">
+  var sellerID = "A23YM23UEBY8FM";
+  var clientID = "amzn1.application-oa2-client.242a859efb5f47f09847f3f0aebd50ca";
+
+  window.onAmazonLoginReady = function() {
+    amazon.Login.setClientId(clientID);
+  };
+
+  window.onAmazonPaymentsReady = function () {
+    widgetsInit();
+  }
+
+</script>
+
+<!--  Amazon Pay Widgets Javasript -->
+<script type="text/javascript"
+        src="https://static-fe.payments-amazon.com/OffAmazonPayments/jp/sandbox/lpa/js/Widgets.js"
+        async></script>
+
+<script src="js/jquery-3.2.1.min.js"></script>
+
+<script type="text/javascript">
+
+  function widgetsInit() {
+    //ここで Amazon Pay を実装じます。
+
+    OffAmazonPayments.Button("buttonWidgets", "A23YM23UEBY8FM", {
+
+      type: "PwA",
+      color: "Gold",
+      size: "medium",
+      authorization: function () {
+        var loginOptions = {scope: "profile payments:widget payments:shipping_address", popup: true};
+        var authRequest = amazon.Login.authorize(loginOptions, "index.html");
+      }
+
+    });
+
+    new OffAmazonPayments.Widgets.AddressBook({
+      sellerId: sellerID,
+      onOrderReferenceCreate: function (orderReference) {
+        showWallet(orderReference.getAmazonOrderReferenceId());
+        $("#oroID").text(orderReference.getAmazonOrderReferenceId());
+      },
+      design: {
+        designMode: 'responsive'
+      },
+      onError: function (error) {
+        console.log('OffAmazonPayments.Widgets.AddressBook', error.getErrorCode(), error.getErrorMessage());
+      }
+    }).bind("addressWidgets");
+
+  }
+
+  function showWallet(orderReference) {
+    new OffAmazonPayments.Widgets.Wallet({
+      sellerId: "A23YM23UEBY8FM",
+      amazonOrderReferenceId: orderReference,
+      onPaymentSelect: function() {
+        console.log("OffAmazonPayments.Widgets.Wallet", arguments);
+      },
+      design: {
+        designMode: 'responsive'
+      },
+      onError: function(error) {
+
+      }
+    }).bind("walletWidgets");
+  }
+</script>
+
+
+</body>
+</html>
